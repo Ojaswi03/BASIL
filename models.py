@@ -18,6 +18,13 @@ class MNISTModel:
     def set_params(self, weights):
         self.model.set_weights(weights)
 
+    @property
+    def trainable_weights(self):
+        return self.model.trainable_weights
+
+    def __call__(self, x, training=False):
+        return self.model(x, training=training)
+
     def train(self, train_data, epochs):
         X, y = [], []
         for batch in train_data:
@@ -56,6 +63,13 @@ class CIFARModel:
 
     def set_params(self, weights):
         self.model.set_weights(weights)
+
+    @property
+    def trainable_weights(self):
+        return self.model.trainable_weights
+
+    def __call__(self, x, training=False):
+        return self.model(x, training=training)
 
     def train(self, train_data, epochs):
         X, y = [], []

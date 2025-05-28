@@ -1,5 +1,6 @@
 import numpy as np
 from copy import deepcopy
+import tensorflow as tf
 from trainer import local_update, evaluate
 
 class BasilNode:
@@ -29,8 +30,13 @@ class BasilNode:
             total_loss = 0
             total = 0
             for X_batch, y_batch in self.data_loader:
-                logits = self.model.forward(X_batch)
-                total_loss += np.sum(np.maximum(0, logits - logits[np.arange(len(y_batch)), y_batch][:, np.newaxis] + 1) - 1)
+                X_batch = np.array(X_batch)
+                if X_batch.shape[1] == 3 and X_batch.shape[2] == 32 and X_batch.shape[3] == 32:
+                    X_batch = np.transpose(X_batch, (0, 2, 3, 1))  # NCHW → NHWC
+                indices = tf.range(len(y_batch))
+                selected_logits = tf.gather_nd(logits, tf.stack([indices, tf.cast(y_batch, tf.int32)], axis=1))
+                total_loss += tf.reduce_sum(tf.maximum(0.0, logits - tf.expand_dims(selected_logits, axis=1) + 1) - 1)
+
                 total += len(y_batch)
             losses.append(total_loss / total)
         best_idx = np.argmin(losses)

@@ -30,7 +30,10 @@ class BasilNode:
             total_loss = 0
             total = 0
             for X_batch, y_batch in self.data_loader:
-                logits = self.model.forward(X_batch)
+                X_batch = np.array(X_batch)
+                if X_batch.shape[1] == 3 and X_batch.shape[2] == 32 and X_batch.shape[3] == 32:
+                    X_batch = np.transpose(X_batch, (0, 2, 3, 1))  # channels_first to channels_last
+                logits = self.model(X_batch, training=True)
                 total_loss += np.sum(np.maximum(0, logits - logits[np.arange(len(y_batch)), y_batch][:, np.newaxis] + 1) - 1)
                 total += len(y_batch)
             losses.append(total_loss / total)

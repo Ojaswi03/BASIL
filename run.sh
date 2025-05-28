@@ -56,7 +56,7 @@ epochs=1
 iid="y"
 acds="n"
 basilPlus="n"
-attacks=("none" "gaussian" "sign_flip" "hidden")
+attack=("none" "gaussian" "sign_flip" "hidden")
 attkID="2,5,7"
 echo "======================= CONFIG ================="
 echo "Dataset               : $dataset"
