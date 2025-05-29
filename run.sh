@@ -47,44 +47,53 @@ echo "🔁 Starting Basil Experiments..."
 
 
 
-#Testing configuration for CIFAR-1
+#Testing configuration for CIFAR-10
 
-echo "🔁 Starting Basil Experiments..."
 
-dataset="c"
+dataset='c'
 nodes=10
 S=10
 rounds=500
 epochs=1
-iid="y"
-acds="n"
-basilPlus="n"
-attack_ids="2,5,7"
 
-declare -a attacks=("none" "gaussian" "sign_flip" "hidden")
+iid='y'
+acds='n'
+basilPlus='n'
 
-for attack in "${attacks[@]}"; do
-    echo ""
-    echo "======================= CONFIG ================="
-    echo "Dataset               : $dataset"
-    echo "Nodes                 : $nodes"
-    echo "S                     : $S"
-    echo "Rounds                : $rounds"
-    echo "Epochs                : $epochs"
-    echo "IID [y/n]             : $iid"
-    echo "ACDS [y/n]            : $acds"
-    echo "Basil Plus [y/n]      : $basilPlus"
-    echo "Attack                : $attack"
+# attack='gaussian'
+# attack_ids='2,5,7'
 
-    if [ "$attack" = "none" ]; then
-        echo "Attack IDs (Nodes)    : None"
-    else
-        echo "Attack IDs (Nodes)    : $attack_ids"
-    fi
-    echo "================================================="
 
-    # Launch experiment
-    python3 main_basil.py <<EOF
+# # Include 'none' as a valid attack type for completeness
+# # declare -a attacks=("gaussian" "sign_flip" "hidden")
+# # list of attacks to test
+# attacks=("none" "gaussian" "sign_flip" "hidden")
+# attacks=("gaussian")
+
+# for attack in "${attacks[@]}"; do
+#     echo ""
+#     echo "======================= CONFIG ================="
+#     echo "Dataset               : $dataset"
+#     echo "Nodes                 : $nodes"
+#     echo "S                     : $S"
+#     echo "Rounds                : $rounds"
+#     echo "Epochs                : $epochs"
+#     echo "IID [y/n]             : $iid"
+#     echo "ACDS [y/n]            : $acds"
+#     echo "Basil Plus [y/n]      : $basilPlus"
+#     echo "Attack                : $attack"
+#     echo "Attack IDs (Nodes)    : $attack_ids"
+#     # if [ "$attack" = "none" ]; then
+#     #     echo "Attack IDs (Nodes)    :  None (No attack)"""
+#     # else
+#     #     echo "Attack IDs (Nodes)    : $attack_ids"
+#     # fi
+#     echo "================================================="
+
+#     # Launch experiment
+
+
+python3 main_basil.py <<EOF
 $dataset
 $nodes
 $S
@@ -93,9 +102,8 @@ $epochs
 $iid
 $acds
 $basilPlus
-$attack
-$( [ "$attack" = "none" ] && echo "" || echo "$attack_ids" )
 EOF
-done
+# done
 
 echo "✅ All experiments completed."
+##$( [ "$attack" = "none" ] && echo "" || echo "$attack_ids" )
