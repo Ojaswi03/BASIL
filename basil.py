@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from trainer import local_update, evaluate
+from trainer import local_update, evaluate_batch_loss, evaluate
 
 class BasilNode:
     def __init__(self, node_id, model, data_loader, S):
@@ -9,11 +9,10 @@ class BasilNode:
         self.data_loader = data_loader
         self.S = S
         self.stored_models = []
-    
-    
+
     def get_weights(self):
         return [w.numpy() for w in self.model.trainable_weights]
-    
+
     def set_weights(self, weights):
         for var, w in zip(self.model.trainable_weights, weights):
             var.assign(w)
@@ -27,25 +26,16 @@ class BasilNode:
         losses = []
         for params in self.stored_models:
             self.model.set_params(params)
-            total_loss = 0
-            total = 0
-            for X_batch, y_batch in self.data_loader:
-                X_batch = np.array(X_batch)
-                if X_batch.shape[1] == 3 and X_batch.shape[2] == 32 and X_batch.shape[3] == 32:
-                    X_batch = np.transpose(X_batch, (0, 2, 3, 1))  # channels_first to channels_last
-                logits = self.model(X_batch, training=True)
-                total_loss += np.sum(np.maximum(0, logits - logits[np.arange(len(y_batch)), y_batch][:, np.newaxis] + 1) - 1)
-                total += len(y_batch)
-            losses.append(total_loss / total)
+            loss = evaluate_batch_loss(self.model, self.data_loader)
+            losses.append(loss)
         best_idx = np.argmin(losses)
         return self.stored_models[best_idx]
 
-    def update_model(self, epochs=1, lr=0.01):
+    def update_model(self, epochs, lr):
         local_update(self.model, self.data_loader, epochs, lr)
         return deepcopy(self.model.get_params())
 
-
-def basil_ring_training(nodes, rounds, epochs=1, test_loader=None):
+def basil_ring_training(nodes, rounds, epochs, test_loader):
     N = len(nodes)
     initial_model = deepcopy(nodes[0].model.get_params())
 
@@ -60,7 +50,8 @@ def basil_ring_training(nodes, rounds, epochs=1, test_loader=None):
         print(f"\n[Round {r + 1}/{rounds}] Starting training step with lr={lr:.4f}...")
 
         for i in range(N):
-            nodes[i].model.set_params(nodes[i].select_model())
+            selected = nodes[i].select_model()
+            nodes[i].model.set_params(selected)
             model_params = nodes[i].update_model(epochs, lr)
 
             for s in range(1, nodes[i].S + 1):

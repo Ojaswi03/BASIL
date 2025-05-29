@@ -47,34 +47,44 @@ echo "🔁 Starting Basil Experiments..."
 
 
 
-#Testing configuration for CIFAR-10
+#Testing configuration for CIFAR-1
+
+echo "🔁 Starting Basil Experiments..."
+
 dataset="c"
 nodes=10
 S=10
-rounds=20
+rounds=500
 epochs=1
 iid="y"
 acds="n"
 basilPlus="n"
-attack=("none" "gaussian" "sign_flip" "hidden")
-attkID="2,5,7"
-echo "======================= CONFIG ================="
-echo "Dataset               : $dataset"
-echo "Nodes                 : $nodes"
-echo "S                     : $S"
-echo "Rounds                : $rounds"
-echo "Epochs                : $epochs"
-echo "IID [y/n]             : $iid"
-echo "ACDS [y/n]            : $acds"
-echo "Basil Plus [y/n]      : $basilPlus"
-echo "Attack                : $attack"
-echo "Attack IDs (Nodes)    : $attkID"
-echo "================================================="
+attack_ids="2,5,7"
 
+declare -a attacks=("none" "gaussian" "sign_flip" "hidden")
 
-# Run CIFAR-10
-echo "🖼️  Running Basil with CIFAR-10..."
-python3 main_basil.py <<EOF
+for attack in "${attacks[@]}"; do
+    echo ""
+    echo "======================= CONFIG ================="
+    echo "Dataset               : $dataset"
+    echo "Nodes                 : $nodes"
+    echo "S                     : $S"
+    echo "Rounds                : $rounds"
+    echo "Epochs                : $epochs"
+    echo "IID [y/n]             : $iid"
+    echo "ACDS [y/n]            : $acds"
+    echo "Basil Plus [y/n]      : $basilPlus"
+    echo "Attack                : $attack"
+
+    if [ "$attack" = "none" ]; then
+        echo "Attack IDs (Nodes)    : None"
+    else
+        echo "Attack IDs (Nodes)    : $attack_ids"
+    fi
+    echo "================================================="
+
+    # Launch experiment
+    python3 main_basil.py <<EOF
 $dataset
 $nodes
 $S
@@ -84,7 +94,8 @@ $iid
 $acds
 $basilPlus
 $attack
-$attkID
+$( [ "$attack" = "none" ] && echo "" || echo "$attack_ids" )
 EOF
+done
 
 echo "✅ All experiments completed."

@@ -5,7 +5,7 @@ from torch.utils.data import Subset
 import numpy as np
 import random
 
-def load_cifar10(iid=True, num_users=100, seed=42):
+def load_cifar10(iid, num_users, seed):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -33,10 +33,12 @@ def _non_iid_partition(dataset, num_users, seed):
     idxs = np.arange(len(dataset))
     sorted_idxs = idxs[np.argsort(labels)]
 
-    num_shards, num_imgs = 2 * num_users, len(dataset) // (2 * num_users)
+    num_shards = 2 * num_users
+    num_imgs = len(dataset) // num_shards
     shards = [sorted_idxs[i * num_imgs:(i + 1) * num_imgs] for i in range(num_shards)]
 
     random.seed(seed)
     random.shuffle(shards)
-    user_data = {i: Subset(dataset, np.concatenate(shards[2*i:2*i+2])) for i in range(num_users)}
+
+    user_data = {i: Subset(dataset, np.concatenate(shards[2 * i:2 * i + 2])) for i in range(num_users)}
     return user_data

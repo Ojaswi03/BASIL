@@ -4,8 +4,7 @@ from torchvision.datasets import MNIST
 from torchvision import transforms
 from torch.utils.data import Subset
 
-# ---- MNIST Loader ----
-def load_mnist(iid=True, num_users=100, seed=42):
+def load_mnist(iid, num_users, seed):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -21,7 +20,6 @@ def load_mnist(iid=True, num_users=100, seed=42):
 
     return user_data, test_set
 
-# ---- Partition Functions ----
 def _iid_partition(dataset, num_users, seed):
     num_items = int(len(dataset) / num_users)
     all_idxs = list(range(len(dataset)))
@@ -34,11 +32,11 @@ def _non_iid_partition(dataset, num_users, seed):
     idxs = np.arange(len(dataset))
     sorted_idxs = idxs[np.argsort(labels)]
 
-    num_shards, num_imgs = 2 * num_users, int(len(dataset) / (2 * num_users))
+    num_shards = 2 * num_users
+    num_imgs = int(len(dataset) / num_shards)
     shards = [sorted_idxs[i * num_imgs:(i + 1) * num_imgs] for i in range(num_shards)]
 
     random.seed(seed)
     random.shuffle(shards)
-
-    user_data = {i: Subset(dataset, np.concatenate(shards[2*i:2*i+2])) for i in range(num_users)}
+    user_data = {i: Subset(dataset, np.concatenate(shards[2 * i:2 * i + 2])) for i in range(num_users)}
     return user_data
