@@ -2,15 +2,20 @@
 
 echo "🔁 Starting Basil Experiments..."
 
-dataset="m"
+# ==== CONFIG ====
+dataset="c"        # "m" for MNIST, "c" for CIFAR10
 nodes=10
-S=10
-rounds=35
+S=3
+rounds=500
 epochs=1
-iid="y"
-acds="n"
-basilPlus="n"
+iid="y"            # "y" for IID, "n" for non-IID
+acds="y"           # only used if iid="n"
+basilPlus="n"      # "y" to enable Basil+
+attack="none"    # "none", "gaussian", "sign_flip", "hidden"
+attackers="2,5,7"
+hiddenStart=20
 
+# ==== PRINT CONFIG ====
 echo ""
 echo "======================= CONFIG ================="
 echo "Dataset               : $dataset"
@@ -19,11 +24,33 @@ echo "S                     : $S"
 echo "Rounds                : $rounds"
 echo "Epochs                : $epochs"
 echo "IID [y/n]             : $iid"
-echo "ACDS [y/n]            : $acds"
+if [ "$iid" == "n" ]; then
+  echo "ACDS [y/n]            : $acds"
+fi
 echo "Basil Plus [y/n]      : $basilPlus"
+echo "Attack Type           : $attack"
+echo "Attacker IDs          : $attackers"
+if [ "$attack" == "hidden" ]; then
+  echo "Hidden Start Round    : $hiddenStart"
+fi
 echo "================================================="
+echo ""
 
-
+# ==== RUN PYTHON SCRIPT WITH CORRECT INPUTS ====
+if [ "$iid" == "y" ]; then
+python3 main_basil.py <<EOF
+$dataset
+$nodes
+$S
+$rounds
+$epochs
+$iid
+$basilPlus
+$attack
+$attackers
+$hiddenStart
+EOF
+else
 python3 main_basil.py <<EOF
 $dataset
 $nodes
@@ -33,6 +60,10 @@ $epochs
 $iid
 $acds
 $basilPlus
+$attack
+$attackers
+$hiddenStart
 EOF
+fi
 
-echo "All experiments completed."
+echo "✅ All experiments completed."
