@@ -11,7 +11,7 @@ epochs=1
 iid="y"            # "y" for IID, "n" for non-IID
 acds="y"           # only used if iid="n"
 basilPlus="n"      # "y" to enable Basil+
-attack="none"    # "none", "gaussian", "sign_flip", "hidden"
+attack="hidden"    # "none", "gaussian", "sign_flip", "hidden"
 attackers="2,5,7"
 hiddenStart=20
 
